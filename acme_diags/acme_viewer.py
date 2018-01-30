@@ -52,18 +52,19 @@ def _get_acme_logo_path(root_dir, html_path):
     return pth
 
 
-def _add_header(path, version, model_name, time, logo_path):
+def _add_header(path, version, model_name, time, logo_path, ref_name="OBS"):
     """Add the header to the html located at path"""
 
     # We're inserting the following in the body under navbar navbar-default
-    # <div id="acme-header" style="background-color:#dbe6c5; float:left; width:45%">
+    # <div id="acme-header" style="background-color:#dbe6c5; float:right; width:55%">
     # 	<p style="margin-left:5em">
     # 		<b>ACME Diagnostics Package [VERSION]</b><br>
-    # 		Test model name: [SOMETHING]<br>
-    # 		Date created: [DATE]<br>
+    # 		Test model: [SOMETHING]<br>
+    # 		Reference: [SOMETHING]<br>
+    #           Date created: [DATE]<br>
     # 	</p>
     # </div>
-    # <div id="acme-header2" style="background-color:#dbe6c5; float:right; width:55%">
+    # <div id="acme-header2" style="background-color:#dbe6c5; float:left; width:45%">
     # 	<img src="ACME_logo.png" alt="logo" style="width:161px; height:70px; background-color:#dbe6c5">
     # </div>
 
@@ -73,7 +74,7 @@ def _add_header(path, version, model_name, time, logo_path):
         old_header[0].decompose()
 
     header_div = soup.new_tag(
-        "div", id="acme-header", style="background-color:#dbe6c5; float:left; width:45%")
+        "div", id="acme-header", style="background-color:#dbe6c5; float:right; width:55%")
     p = soup.new_tag("p", style="margin-left:5em")
 
     bolded_title = soup.new_tag("b")
@@ -81,7 +82,10 @@ def _add_header(path, version, model_name, time, logo_path):
     bolded_title.append(soup.new_tag("br"))
     p.append(bolded_title)
 
-    p.append("Model: {}".format(model_name))
+    p.append("Test Model: {}".format(model_name))
+    p.append(soup.new_tag("br"))
+    p.append("Reference: {}".format(ref_name))
+
     p.append(soup.new_tag("br"))
 
     p.append("Created {}".format(time))
@@ -90,7 +94,7 @@ def _add_header(path, version, model_name, time, logo_path):
     soup.body.insert(0, header_div)
 
     img_div = soup.new_tag("div", id="acme-header2",
-                           style="background-color:#dbe6c5; float:right; width:55%")
+                           style="background-color:#dbe6c5; float:left; width:45%")
     img = soup.new_tag("img", src=logo_path, alt="logo",
                        style="width:161px; height:71px; background-color:#dbe6c5")
     img_div.append(img)
@@ -129,7 +133,7 @@ def _extras(root_dir, parameters):
     for f in index_files:
         path = _get_acme_logo_path(root_dir, f)
         _add_header(f, acme_diags.__version__,
-                    parameters[0].test_name, dt, path)
+                    parameters[0].test_name, dt, path, parameters[0].ref_name)
         h1_to_h3(f)
 
     _edit_table_html(root_dir)
@@ -194,7 +198,7 @@ def _create_csv_from_dict(output_dir, season):
     #table_path = os.path.abspath(os.path.join(output_dir, season + '_metrics_table.csv'))
     table_path = os.path.join(output_dir, season + '_metrics_table.csv')
 
-    col_names = ['Variables', 'Unit', 'Model mean', 'Obs mean', 'Mean Bias', 'RMSE', 'correlation']
+    col_names = ['Variables', 'Unit', 'Test mean', 'Ref mean', 'Mean Bias', 'RMSE', 'correlation']
 
     with open(table_path, 'w') as table_csv:
         writer=csv.writer(table_csv, delimiter=',', lineterminator='\n', quoting=csv.QUOTE_NONE)
